@@ -29,8 +29,3 @@ jobs:
       run: |
         pytest --cov=.
         coverage report -m
-
-    - name: Enviar Relatório de Cobertura para Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}  # Configure o token nos secrets se for necessário
