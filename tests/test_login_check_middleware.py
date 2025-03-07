@@ -15,10 +15,7 @@ class TestLoginCheckMiddleware(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.middleware = LoginCheckMiddleWare()
-        # Função dummy para simular uma view
-        def dummy_view(request):
-            return HttpResponse("Dummy Response")
-        self.dummy_view = dummy_view
+        self.dummy_view = DummyView()
 
     def set_view_module(self, module_name):
         # Define o atributo __module__ na view dummy
@@ -41,10 +38,9 @@ class TestLoginCheckMiddleware(TestCase):
         self.assertIsNone(response)
 
     def test_hod_correct_module_allows_view(self):
-        # Usuário autenticado do tipo HOD com view na module correto
+        # Usuário HOD com view no módulo correto
         request = self.factory.get("/hod/")
-        user = User(username="hoduser", user_type="1")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="hoduser", password="pass", user_type="1")
         request.user = user
         self.set_view_module("student_management_app.HodViews")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -53,8 +49,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_hod_wrong_module_redirects_admin_home(self):
         # Usuário HOD acessando view fora do módulo adequado
         request = self.factory.get("/hod/")
-        user = User(username="hoduser", user_type="1")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="hoduser", password="pass", user_type="1")
         request.user = user
         self.set_view_module("student_management_app.OtherViews")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -64,8 +59,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_staff_correct_module_allows_view(self):
         # Usuário Staff com módulo correto
         request = self.factory.get("/staff/")
-        user = User(username="staffuser", user_type="2")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="staffuser", password="pass", user_type="2")
         request.user = user
         self.set_view_module("student_management_app.StaffViews")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -74,8 +68,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_staff_wrong_module_redirects_staff_home(self):
         # Usuário Staff acessando view errada
         request = self.factory.get("/staff/")
-        user = User(username="staffuser", user_type="2")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="staffuser", password="pass", user_type="2")
         request.user = user
         self.set_view_module("student_management_app.SomeOtherModule")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -85,8 +78,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_student_correct_module_allows_view(self):
         # Usuário Student com módulo correto
         request = self.factory.get("/student/")
-        user = User(username="studentuser", user_type="3")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="studentuser", password="pass", user_type="3")
         request.user = user
         self.set_view_module("student_management_app.StudentViews")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -95,8 +87,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_student_wrong_module_redirects_student_home(self):
         # Usuário Student acessando view fora do módulo adequado
         request = self.factory.get("/student/")
-        user = User(username="studentuser", user_type="3")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="studentuser", password="pass", user_type="3")
         request.user = user
         self.set_view_module("student_management_app.OtherModule")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
@@ -106,8 +97,7 @@ class TestLoginCheckMiddleware(TestCase):
     def test_invalid_user_type_redirects_to_login(self):
         # Usuário com user_type não reconhecido
         request = self.factory.get("/invalid/")
-        user = User(username="invaliduser", user_type="99")
-        user.is_authenticated = True
+        user = User.objects.create_user(username="invaliduser", password="pass", user_type="99")
         request.user = user
         self.set_view_module("student_management_app.HodViews")
         response = self.middleware.process_view(request, self.dummy_view, [], {})
