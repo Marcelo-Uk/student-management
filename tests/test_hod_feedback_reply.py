@@ -1,7 +1,8 @@
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from student_management_app.models import FeedBackStudent, FeedBackStaffs
+import json
+from student_management_app.models import FeedBackStudent, FeedBackStaffs, Courses, SessionYearModel, Students, Staffs
 
 User = get_user_model()
 
@@ -22,16 +23,56 @@ class TestFeedbackReplyEndpoints(TestCase):
         )
         self.client.login(username="hodfeedback", password="pass")
         
-        # Cria feedback para estudante e staff.
-        # Se os campos student_id ou staff_id são obrigatórios e precisam de uma referência,
-        # você pode passar None ou criar objetos dummy, mas para este teste focaremos na funcionalidade do reply.
+        # Cria objetos padrão para que, se necessário, o signal funcione
+        self.default_course = Courses.objects.create(id=1, course_name="Default Course")
+        self.default_session = SessionYearModel.objects.create(
+            id=1,
+            session_start_year="2025-01-01",
+            session_end_year="2025-12-31"
+        )
+        
+        # Cria usuário dummy para feedback de estudante (user_type="3")
+        self.dummy_student_user = User.objects.create_user(
+            username="dummy_student",
+            password="pass",
+            user_type="3"
+        )
+        # Tenta recuperar o objeto Students criado automaticamente pelo signal;
+        # se não existir, cria manualmente usando os objetos padrão
+        try:
+            self.dummy_student = Students.objects.get(admin=self.dummy_student_user)
+        except Students.DoesNotExist:
+            self.dummy_student = Students.objects.create(
+                admin=self.dummy_student_user,
+                course_id=self.default_course,
+                session_year_id=self.default_session,
+                address="",
+                profile_pic="",
+                gender="Male"
+            )
+        
+        # Cria usuário dummy para feedback de staff (user_type="2")
+        self.dummy_staff_user = User.objects.create_user(
+            username="dummy_staff",
+            password="pass",
+            user_type="2"
+        )
+        try:
+            self.dummy_staff = Staffs.objects.get(admin=self.dummy_staff_user)
+        except Staffs.DoesNotExist:
+            self.dummy_staff = Staffs.objects.create(
+                admin=self.dummy_staff_user,
+                address="Staff Address"
+            )
+        
+        # Cria feedback para estudante e staff utilizando os objetos dummy
         self.student_feedback = FeedBackStudent.objects.create(
-            student_id=None,
+            student_id=self.dummy_student,
             feedback="Initial student feedback",
             feedback_reply=""
         )
         self.staff_feedback = FeedBackStaffs.objects.create(
-            staff_id=None,
+            staff_id=self.dummy_staff,
             feedback="Initial staff feedback",
             feedback_reply=""
         )
