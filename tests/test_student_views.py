@@ -15,13 +15,8 @@ User = get_user_model()
 
 class TestStudentViews(TestCase):
     def setUp(self):
-        """
-        Configura o ambiente de teste, criando um usuário 'student' e
-        objetos necessários para as views (curso, sessão etc.).
-        """
         self.client = Client()
-
-        # Cria um curso e um SessionYear para associar ao estudante
+    
         self.course = Courses.objects.create(
             id=1,
             course_name="Test Course"
@@ -31,22 +26,22 @@ class TestStudentViews(TestCase):
             session_start_year="2025-01-01",
             session_end_year="2025-12-31"
         )
-
-        # Cria um usuário e o registra como estudante (user_type=3)
+    
+        # Cria usuário com user_type=3
         self.user = User.objects.create_user(
             username="studentuser",
             password="testpass",
             user_type=3
         )
-        self.student = Students.objects.create(
-            admin=self.user,
-            gender="Male",
-            profile_pic="",
-            address="Test Address",
-            course_id=self.course,
-            session_year_id=self.session
-        )
-
+        # O signal automaticamente cria Students com admin=self.user
+        self.student = Students.objects.get(admin=self.user)
+        # Ajusta os campos adicionais se necessário
+        self.student.gender = "Male"
+        self.student.address = "Test Address"
+        self.student.course_id = self.course
+        self.student.session_year_id = self.session
+        self.student.save()
+    
         # Loga o usuário no sistema
         self.client.login(username="studentuser", password="testpass")
 
