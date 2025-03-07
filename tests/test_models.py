@@ -6,7 +6,7 @@ from student_management_app.models import (
     Courses, SessionYearModel
 )
 
-CustomUser = get_user_model()  # Já que você usa um AbstractUser customizado
+CustomUser = get_user_model() 
 
 
 class TestUserSignals(TestCase):
