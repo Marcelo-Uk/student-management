@@ -2,7 +2,7 @@ from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 from django.http import HttpResponse
-from student_management_app.middleware import LoginCheckMiddleWare
+from student_management_app.LoginCheckMiddleWare import LoginCheckMiddleWare
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
