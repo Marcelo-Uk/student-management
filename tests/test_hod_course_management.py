@@ -73,9 +73,9 @@ class TestHodCourseManagement(TestCase):
         self.assertEqual(course.course_name, "Updated Course Name")
 
     def test_edit_course_save_post_invalid_method(self):
-        """Testa se o GET em edit_course_save não retorna status 200 (método inválido)."""
-        response = self.client.get(reverse("edit_course_save"))
-        self.assertNotEqual(response.status_code, 200)
+        """Testa se o GET em edit_course_save, por ser método inválido, gera um ValueError."""
+        with self.assertRaises(ValueError):
+            self.client.get(reverse("edit_course_save"))
 
     def test_delete_course_get(self):
         """Testa se delete_course deleta o curso e redireciona."""
