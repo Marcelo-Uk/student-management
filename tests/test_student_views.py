@@ -17,6 +17,7 @@ class TestStudentViews(TestCase):
     def setUp(self):
         self.client = Client()
     
+        # Cria curso e sessão
         self.course = Courses.objects.create(
             id=1,
             course_name="Test Course"
@@ -27,23 +28,25 @@ class TestStudentViews(TestCase):
             session_end_year="2025-12-31"
         )
     
-        # Cria usuário com user_type=3
+        # Cria usuário do tipo estudante
         self.user = User.objects.create_user(
             username="studentuser",
             password="testpass",
             user_type=3
         )
-        # O signal automaticamente cria Students com admin=self.user
+        self.user.save()
+    
+        # A signal já cria Students, recupere o objeto:
         self.student = Students.objects.get(admin=self.user)
-        # Ajusta os campos adicionais se necessário
-        self.student.gender = "Male"
+        # Ajuste campos se quiser
         self.student.address = "Test Address"
         self.student.course_id = self.course
         self.student.session_year_id = self.session
         self.student.save()
     
-        # Loga o usuário no sistema
-        self.client.login(username="studentuser", password="testpass")
+        # Loga
+        login_ok = self.client.login(username="studentuser", password="testpass")
+        # Opcional: assert login_ok is True, "Login falhou!"
 
     def test_student_home_view_get(self):
         """
