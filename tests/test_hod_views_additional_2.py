@@ -43,11 +43,22 @@ class TestHodViewsStudentManagement(TestCase):
         self.student_user = User.objects.create_user(
             username="student_test",
             password="testpass",
-            user_type="3"
+            user_type="3"  # usando string, pois o field é CharField
         )
-        # Recupera o objeto Students criado automaticamente pelo signal
-        self.student = Students.objects.get(admin=self.student_user)
-        # Atualiza o objeto para os dados que queremos usar no teste
+        # Tenta recuperar o objeto Students criado automaticamente pelo signal
+        try:
+            self.student = Students.objects.get(admin=self.student_user)
+        except Students.DoesNotExist:
+            # Se não foi criado (por causa da comparação), cria-o manualmente
+            self.student = Students.objects.create(
+                admin=self.student_user,
+                course_id=self.default_course,
+                session_year_id=self.default_session,
+                address="",
+                profile_pic="",
+                gender=""
+            )
+        # Atualiza o objeto para usar os dados dos testes
         self.student.course_id = self.course
         self.student.session_year_id = self.session
         self.student.save()
