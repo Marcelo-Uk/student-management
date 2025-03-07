@@ -1,26 +1,24 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from student_management_app.models import (
-    SessionYearModel, Students, Courses
-)
+from student_management_app.models import Students, Courses, SessionYearModel
 
 User = get_user_model()
 
+@override_settings(MIDDLEWARE=[])
 class TestHodViewsSessions(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Cria usuário HOD com user_type="1"
+        # Cria usuário HOD com user_type=1 (usando inteiro para acionar o sinal)
         self.hod_user = User.objects.create_user(
             username="hodsession",
             password="hodpass",
-            user_type="1"  # string
+            user_type=1
         )
-        # Faz login como HOD
         self.client.login(username="hodsession", password="hodpass")
 
-        # Cria uma SessionYearModel existente para testar edição e deleção
+        # Cria uma SessionYearModel para testar edição e deleção
         self.session = SessionYearModel.objects.create(
             session_start_year="2025-01-01",
             session_end_year="2025-12-31"
@@ -80,15 +78,16 @@ class TestHodViewsSessions(TestCase):
         self.assertFalse(SessionYearModel.objects.filter(id=self.session.id).exists())
 
 
+@override_settings(MIDDLEWARE=[])
 class TestHodViewsStudentManagement(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Cria usuário HOD com user_type="1"
+        # Cria usuário HOD com user_type=1
         self.hod_user = User.objects.create_user(
             username="hodstudent",
             password="hodpass",
-            user_type="1"  # string
+            user_type=1
         )
         self.client.login(username="hodstudent", password="hodpass")
 
@@ -98,13 +97,13 @@ class TestHodViewsStudentManagement(TestCase):
             session_end_year="2025-12-31"
         )
 
-        # Cria um student existente com user_type="3"
+        # Cria um student existente com user_type=3 (usando inteiro)
         self.student_user = User.objects.create_user(
             username="student_test",
             password="testpass",
-            user_type="3"  # string
+            user_type=3
         )
-        # Recupera o objeto Students criado pela signal
+        # Recupera o objeto Students criado automaticamente pelo signal
         self.student = Students.objects.get(admin=self.student_user)
         self.student.course_id = self.course
         self.student.session_year_id = self.session
