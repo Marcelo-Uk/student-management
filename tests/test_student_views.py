@@ -34,9 +34,8 @@ class TestStudentViews(TestCase):
         )
         self.user.save()
     
-        # A signal já cria Students, recupere o objeto:
+        # A signal já cria Students, recupera o objeto:
         self.student = Students.objects.get(admin=self.user)
-        # Ajuste campos se necessário
         self.student.address = "Test Address"
         self.student.course_id = self.course
         self.student.session_year_id = self.session

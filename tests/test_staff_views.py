@@ -149,12 +149,14 @@ class TestStaffViews(TestCase):
         )
         # Cria Student para simular a escolha no formulário
         student_user = User.objects.create_user(username="student2", password="studpass", user_type=3)
-        student = Students.objects.create(
-            admin=student_user,
-            course_id=self.course,
-            session_year_id=self.session
-        )
-
+        student_user.save()
+        
+        # Em vez de Students.objects.create(...), busque o já criado pela signal
+        student = Students.objects.get(admin=student_user)
+        student.course_id = self.course
+        student.session_year_id = self.session
+        student.save()
+        
         data = {
             'student_list': student_user.id,  # 'student_list' no form staff_add_result_save
             'assignment_marks': '30',
@@ -162,8 +164,8 @@ class TestStaffViews(TestCase):
             'subject': subject.id
         }
         response = self.client.post(reverse('staff_add_result_save'), data=data)
-        self.assertEqual(response.status_code, 302)  # Redireciona para staff_add_result
-
+        self.assertEqual(response.status_code, 302)
+        
         # Verifica se o StudentResult foi criado ou atualizado
         self.assertTrue(
             StudentResult.objects.filter(
