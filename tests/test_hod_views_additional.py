@@ -5,16 +5,21 @@ from student_management_app.models import Students, Courses, SessionYearModel
 
 User = get_user_model()
 
-@override_settings(MIDDLEWARE=[])
+@override_settings(
+    MIDDLEWARE=[
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware'
+    ]
+)
 class TestHodViewsSessions(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Cria usuário HOD com user_type=1 (usando inteiro para acionar o sinal)
+        # Cria usuário HOD com user_type="1"
         self.hod_user = User.objects.create_user(
             username="hodsession",
             password="hodpass",
-            user_type=1
+            user_type="1"  # agora como string, conforme esperado pelo sistema
         )
         self.client.login(username="hodsession", password="hodpass")
 
@@ -78,16 +83,21 @@ class TestHodViewsSessions(TestCase):
         self.assertFalse(SessionYearModel.objects.filter(id=self.session.id).exists())
 
 
-@override_settings(MIDDLEWARE=[])
+@override_settings(
+    MIDDLEWARE=[
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware'
+    ]
+)
 class TestHodViewsStudentManagement(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Cria usuário HOD com user_type=1
+        # Cria usuário HOD com user_type="1"
         self.hod_user = User.objects.create_user(
             username="hodstudent",
             password="hodpass",
-            user_type=1
+            user_type="1"
         )
         self.client.login(username="hodstudent", password="hodpass")
 
@@ -97,11 +107,11 @@ class TestHodViewsStudentManagement(TestCase):
             session_end_year="2025-12-31"
         )
 
-        # Cria um student existente com user_type=3 (usando inteiro)
+        # Cria um student existente com user_type="3"
         self.student_user = User.objects.create_user(
             username="student_test",
             password="testpass",
-            user_type=3
+            user_type="3"
         )
         # Recupera o objeto Students criado automaticamente pelo signal
         self.student = Students.objects.get(admin=self.student_user)
