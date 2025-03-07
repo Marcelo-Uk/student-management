@@ -101,7 +101,8 @@ class TestHodViewsStudentManagement(TestCase):
         )
         self.client.login(username="hodstudent", password="hodpass")
         
-        # Cria os objetos padrão necessários para o signal funcionar
+        # Cria os objetos padrão necessários para o signal funcionar:
+        # O signal em models.py faz Courses.objects.get(id=1) e SessionYearModel.objects.get(id=1)
         self.default_course = Courses.objects.create(id=1, course_name="Default Course")
         self.default_session = SessionYearModel.objects.create(
             id=1,
@@ -109,7 +110,7 @@ class TestHodViewsStudentManagement(TestCase):
             session_end_year="2025-12-31"
         )
         
-        # Cria um course e uma sessão para os testes (podem ser diferentes dos padrão)
+        # Cria um curso e uma sessão para os testes (podem ser diferentes dos padrão)
         self.course = Courses.objects.create(course_name="TestCourse")
         self.session = SessionYearModel.objects.create(
             session_start_year="2025-01-01",
@@ -124,7 +125,7 @@ class TestHodViewsStudentManagement(TestCase):
         )
         # Recupera o objeto Students criado automaticamente pelo signal
         self.student = Students.objects.get(admin=self.student_user)
-        # Atualiza o objeto para usar os dados desejados
+        # Atualiza o objeto para os dados que queremos usar no teste
         self.student.course_id = self.course
         self.student.session_year_id = self.session
         self.student.save()
