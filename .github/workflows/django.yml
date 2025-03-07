@@ -27,5 +27,5 @@ jobs:
 
     - name: Executar Testes e Gerar Relatório de Cobertura
       run: |
-        pytest --cov=.
+        coverage run --source=. manage.py test
         coverage report -m
