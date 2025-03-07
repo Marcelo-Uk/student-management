@@ -1,7 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from student_management_app.models import Students, Courses, SessionYearModel
+from student_management_app.models import (
+    SessionYearModel, Students, Courses
+)
 
 User = get_user_model()
 
@@ -9,12 +11,13 @@ class TestHodViewsSessions(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Cria usuário HOD
+        # Cria usuário HOD com user_type="1"
         self.hod_user = User.objects.create_user(
             username="hodsession",
             password="hodpass",
-            user_type=1
+            user_type="1"  # string
         )
+        # Faz login como HOD
         self.client.login(username="hodsession", password="hodpass")
 
         # Cria uma SessionYearModel existente para testar edição e deleção
@@ -45,7 +48,10 @@ class TestHodViewsSessions(TestCase):
         response = self.client.post(reverse('add_session_save'), data=data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(
-            SessionYearModel.objects.filter(session_start_year='2026-01-01', session_end_year='2026-12-31').exists()
+            SessionYearModel.objects.filter(
+                session_start_year='2026-01-01',
+                session_end_year='2026-12-31'
+            ).exists()
         )
 
     def test_edit_session_get(self):
@@ -73,15 +79,16 @@ class TestHodViewsSessions(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(SessionYearModel.objects.filter(id=self.session.id).exists())
 
-User = get_user_model()
 
 class TestHodViewsStudentManagement(TestCase):
     def setUp(self):
         self.client = Client()
+
+        # Cria usuário HOD com user_type="1"
         self.hod_user = User.objects.create_user(
             username="hodstudent",
             password="hodpass",
-            user_type=1
+            user_type="1"  # string
         )
         self.client.login(username="hodstudent", password="hodpass")
 
@@ -91,12 +98,13 @@ class TestHodViewsStudentManagement(TestCase):
             session_end_year="2025-12-31"
         )
 
-        # Cria um student existente
+        # Cria um student existente com user_type="3"
         self.student_user = User.objects.create_user(
             username="student_test",
             password="testpass",
-            user_type=3
+            user_type="3"  # string
         )
+        # Recupera o objeto Students criado pela signal
         self.student = Students.objects.get(admin=self.student_user)
         self.student.course_id = self.course
         self.student.session_year_id = self.session
@@ -117,14 +125,14 @@ class TestHodViewsStudentManagement(TestCase):
         self.assertFalse(Students.objects.filter(admin=self.student_user).exists())
 
     def test_check_email_exist_true(self):
-        # Cria um usuário com e-mail "existing@test.com"
-        existing_user = User.objects.create_user(username="existing", email="existing@test.com", password="pass")
-    
+        """Cria um usuário com e-mail 'existing@test.com' e verifica se retorna True."""
+        User.objects.create_user(username="existing", email="existing@test.com", password="pass")
         response = self.client.post(reverse('check_email_exist'), data={"email": "existing@test.com"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"True")
-    
+
     def test_check_email_exist_false(self):
+        """Verifica se um e-mail que não existe retorna False."""
         response = self.client.post(reverse('check_email_exist'), data={"email": "notfound@test.com"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"False")
