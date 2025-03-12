@@ -1697,17 +1697,26 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 			},
 			_mousemove: function _mousemove(ev) {
 				if (!this._state.enabled) {
-					return false;
+					// Se o slider não está habilitado, previne o comportamento padrão e não retorna nada.
+					ev.preventDefault();
+					ev.stopPropagation();
+					return;
 				}
-
+			
 				var percentage = this._getPercentage(ev);
 				this._adjustPercentageForRangeSliders(percentage);
 				this._state.percentage[this._state.dragged] = percentage;
-
+			
 				var val = this._calculateValue(true);
 				this.setValue(val, true, true);
-
-				return false;
+			
+				// Previna o comportamento padrão e pare a propagação, se necessário.
+				ev.preventDefault();
+				ev.stopPropagation();
+			
+				// Retorne o valor calculado, se isso fizer sentido para o fluxo do seu código,
+				// ou simplesmente não retorne nada (undefined).
+				return val;
 			},
 			_touchmove: function _touchmove(ev) {
 				if (ev.changedTouches === undefined) {
