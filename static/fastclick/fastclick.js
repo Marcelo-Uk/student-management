@@ -475,16 +475,20 @@
 	 */
 	FastClick.prototype.onTouchMove = function(event) {
 		if (!this.trackingClick) {
-			return true;
+			// Se não está rastreando o clique, considera o movimento inválido.
+			return false;
 		}
-
-		// If the touch has moved, cancel the click tracking
-		if (this.targetElement !== this.getTargetElementFromEventTarget(event.target) || this.touchHasMoved(event)) {
+	
+		// Calcula se o evento é válido: se o elemento alvo é o esperado e o toque não se moveu
+		var isValid = (this.targetElement === this.getTargetElementFromEventTarget(event.target)) && !this.touchHasMoved(event);
+	
+		if (!isValid) {
+			// Se o toque mudou de alvo ou se moveu, cancela o rastreamento
 			this.trackingClick = false;
 			this.targetElement = null;
 		}
-
-		return true;
+	
+		return isValid;
 	};
 
 
