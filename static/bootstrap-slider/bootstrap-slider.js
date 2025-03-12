@@ -1752,13 +1752,15 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 			},
 			_mouseup: function _mouseup(ev) {
 				if (!this._state.enabled) {
-					return false;
+					ev.preventDefault();
+					ev.stopPropagation();
+					return;
 				}
-
+			
 				var percentage = this._getPercentage(ev);
 				this._adjustPercentageForRangeSliders(percentage);
 				this._state.percentage[this._state.dragged] = percentage;
-
+			
 				if (this.touchCapable) {
 					// Touch: Unbind touch event handlers:
 					document.removeEventListener("touchmove", this.mousemove, false);
@@ -1767,20 +1769,21 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 				// Unbind mouse event handlers:
 				document.removeEventListener("mousemove", this.mousemove, false);
 				document.removeEventListener("mouseup", this.mouseup, false);
-
+			
 				this._state.inDrag = false;
 				if (this._state.over === false) {
 					this._hideTooltip();
 				}
 				var val = this._calculateValue(true);
-
+			
 				this.setValue(val, false, true);
 				this._trigger('slideStop', val);
-
+			
 				// No longer need 'dragged' after mouse up
 				this._state.dragged = null;
-
-				return false;
+			
+				// Retorna o valor calculado em vez de um valor fixo
+				return val;
 			},
 			_setValues: function _setValues(index, val) {
 				var comp = 0 === index ? 0 : 100;
