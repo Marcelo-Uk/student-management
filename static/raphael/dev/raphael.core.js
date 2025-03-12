@@ -1679,11 +1679,14 @@ define(["eve"], function(eve) {
                         case "m":
                             mx = pa[1];
                             my = pa[2];
+                            // intencionalmente sem break para dar continuidade ao default
                         default:
                             for (var j = 1, jj = pa.length; j < jj; j++) {
                                 r[j] = +(pa[j] - ((j % 2) ? x : y)).toFixed(3);
                             }
+                            break;
                     }
+                    
                 } else {
                     r = res[i] = [];
                     if (pa[0] == "m") {
@@ -1763,22 +1766,27 @@ define(["eve"], function(eve) {
                             r[1] = +pa[1] + x;
                             break;
                         case "R":
-                            var dots = [x, y][concat](pa.slice(1));
+                            var dots = [x, y].concat(pa.slice(1));
                             for (var j = 2, jj = dots.length; j < jj; j++) {
                                 dots[j] = +dots[j] + x;
                                 dots[++j] = +dots[j] + y;
                             }
                             res.pop();
-                            res = res[concat](catmullRom2bezier(dots, crz));
+                            res = res.concat(catmullRom2bezier(dots, crz));
                             break;
                         case "M":
                             mx = +pa[1] + x;
                             my = +pa[2] + y;
-                        default:
+                            // Executa também o código do default:
                             for (j = 1, jj = pa.length; j < jj; j++) {
                                 r[j] = +pa[j] + ((j % 2) ? x : y);
                             }
+                            break;
+                        default:
+                            // Se houver outros casos, pode ser adicionado o código ou um break
+                            break;
                     }
+                    
                 } else if (pa[0] == "R") {
                     dots = [x, y][concat](pa.slice(1));
                     res.pop();
@@ -1803,10 +1811,13 @@ define(["eve"], function(eve) {
                     case "M":
                         mx = r[r.length - 2];
                         my = r[r.length - 1];
+                        // Fall through intencional para executar o default também.
                     default:
                         x = r[r.length - 2];
                         y = r[r.length - 1];
+                        break;
                 }
+                
             }
             res.toString = R._path2string;
             pth.abs = pathClone(res);
@@ -5091,6 +5102,7 @@ define(["eve"], function(eve) {
         if (!font.face) {
             return font;
         }
+    
         this.fonts = this.fonts || {};
         var fontcopy = {
                 w: font.w,
@@ -5098,34 +5110,45 @@ define(["eve"], function(eve) {
                 glyphs: {}
             },
             family = font.face["font-family"];
-        for (var prop in font.face) if (font.face[has](prop)) {
-            fontcopy.face[prop] = font.face[prop];
+    
+        for (var prop in font.face) {
+            if (font.face[has](prop)) {
+                fontcopy.face[prop] = font.face[prop];
+            }
         }
+        
         if (this.fonts[family]) {
             this.fonts[family].push(fontcopy);
         } else {
             this.fonts[family] = [fontcopy];
         }
+        
         if (!font.svg) {
             fontcopy.face["units-per-em"] = toInt(font.face["units-per-em"], 10);
-            for (var glyph in font.glyphs) if (font.glyphs[has](glyph)) {
-                var path = font.glyphs[glyph];
-                fontcopy.glyphs[glyph] = {
-                    w: path.w,
-                    k: {},
-                    d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
+            for (var glyph in font.glyphs) {
+                if (font.glyphs[has](glyph)) {
+                    var path = font.glyphs[glyph];
+                    fontcopy.glyphs[glyph] = {
+                        w: path.w,
+                        k: {},
+                        d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
                             return {l: "L", c: "C", x: "z", t: "m", r: "l", v: "c"}[command] || "M";
                         }) + "z"
-                };
-                if (path.k) {
-                    for (var k in path.k) if (path[has](k)) {
-                        fontcopy.glyphs[glyph].k[k] = path.k[k];
+                    };
+                    if (path.k) {
+                        for (var k in path.k) {
+                            if (path.k[has](k)) {
+                                fontcopy.glyphs[glyph].k[k] = path.k[k];
+                            }
+                        }
                     }
                 }
             }
         }
-        return font;
+        // Retorna a cópia registrada, que pode ser diferente do objeto original
+        return fontcopy;
     };
+    
     /*\
      * Paper.getFont
      [ method ]

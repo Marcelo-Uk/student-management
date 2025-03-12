@@ -337,15 +337,14 @@ define(["./raphael.core"], function(R) {
                         break;
                     case "title":
                         var title = node.getElementsByTagName("title");
-
                         // Use the existing <title>.
                         if (title.length && (title = title[0])) {
-                          title.firstChild.nodeValue = value;
+                            title.firstChild.nodeValue = value;
                         } else {
-                          title = $("title");
-                          var val = R._g.doc.createTextNode(value);
-                          title.appendChild(val);
-                          node.appendChild(title);
+                            title = $("title");
+                            var val = R._g.doc.createTextNode(value);
+                            title.appendChild(val);
+                            node.appendChild(title);
                         }
                         break;
                     case "href":
@@ -402,10 +401,10 @@ define(["./raphael.core"], function(R) {
                                 delete o.clip;
                             }
                         }
-                    break;
+                        break;
                     case "path":
                         if (o.type == "path") {
-                            $(node, {d: value ? attrs.path = R._pathToAbsolute(value) : "M0,0"});
+                            $(node, {d: value ? (attrs.path = R._pathToAbsolute(value)) : "M0,0"});
                             o._.dirty = 1;
                             if (o._.arrows) {
                                 "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
@@ -495,7 +494,6 @@ define(["./raphael.core"], function(R) {
                             $(el, {x: 0, y: 0, patternUnits: "userSpaceOnUse", height: 1, width: 1});
                             $(ig, {x: 0, y: 0, "xlink:href": isURL[1]});
                             el.appendChild(ig);
-
                             (function (el) {
                                 R._preload(isURL[1], function () {
                                     var w = this.offsetWidth,
@@ -522,7 +520,7 @@ define(["./raphael.core"], function(R) {
                                 $(node, {"fill-opacity": attrs["fill-opacity"]});
                         } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
-                                var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                                var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/(^url\(#|\)$)/g, E));
                                 if (gradient) {
                                     var stops = gradient.getElementsByTagName("stop");
                                     $(stops[stops.length - 1], {"stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)});
@@ -549,7 +547,7 @@ define(["./raphael.core"], function(R) {
                         if (attrs.gradient && !attrs[has]("stroke-opacity")) {
                             $(node, {"stroke-opacity": value > 1 ? value / 100 : value});
                         }
-                        // fall
+                        // Fall through intended to "fill-opacity"
                     case "fill-opacity":
                         if (attrs.gradient) {
                             gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
@@ -569,6 +567,7 @@ define(["./raphael.core"], function(R) {
                         node.setAttribute(att, value);
                         break;
                 }
+                
             }
         }
 
@@ -1344,7 +1343,9 @@ define(["./raphael.core"], function(R) {
             top._.dirty = 1;
             top._.dirtyT = 1;
             top = top.prev;
+            size--; // Decrementa para que o loop seja limitado.
         }
+        
         this._viewBox = [x, y, w, h, !!fit];
         return this;
     };
