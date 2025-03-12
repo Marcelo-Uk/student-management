@@ -87,7 +87,140 @@ can set the default in the options.
 jquery.event.drag.js ~ v1.5 ~ Copyright (c) 2008, Three Dub Media (http://threedubmedia.com)
 Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-LICENSE.txt
 */
-(function(a){function e(h){var k,j=this,l=h.data||{};if(l.elem)j=h.dragTarget=l.elem,h.dragProxy=d.proxy||j,h.cursorOffsetX=l.pageX-l.left,h.cursorOffsetY=l.pageY-l.top,h.offsetX=h.pageX-h.cursorOffsetX,h.offsetY=h.pageY-h.cursorOffsetY;else if(d.dragging||l.which>0&&h.which!=l.which||a(h.target).is(l.not))return;switch(h.type){case"mousedown":return a.extend(l,a(j).offset(),{elem:j,target:h.target,pageX:h.pageX,pageY:h.pageY}),b.add(document,"mousemove mouseup",e,l),i(j,!1),d.dragging=null,!1;case!d.dragging&&"mousemove":if(g(h.pageX-l.pageX)+g(h.pageY-l.pageY)<l.distance)break;h.target=l.target,k=f(h,"dragstart",j),k!==!1&&(d.dragging=j,d.proxy=h.dragProxy=a(k||j)[0]);case"mousemove":if(d.dragging){if(k=f(h,"drag",j),c.drop&&(c.drop.allowed=k!==!1,c.drop.handler(h)),k!==!1)break;h.type="mouseup"}case"mouseup":b.remove(document,"mousemove mouseup",e),d.dragging&&(c.drop&&c.drop.handler(h),f(h,"dragend",j)),i(j,!0),d.dragging=d.proxy=l.elem=!1}return!0}function f(b,c,d){b.type=c;var e=a.event.dispatch.call(d,b);return e===!1?!1:e||b.result}function g(a){return Math.pow(a,2)}function h(){return d.dragging===!1}function i(a,b){a&&(a.unselectable=b?"off":"on",a.onselectstart=function(){return b},a.style&&(a.style.MozUserSelect=b?"":"none"))}a.fn.drag=function(a,b,c){return b&&this.bind("dragstart",a),c&&this.bind("dragend",c),a?this.bind("drag",b?b:a):this.trigger("drag")};var b=a.event,c=b.special,d=c.drag={not:":input",distance:0,which:1,dragging:!1,setup:function(c){c=a.extend({distance:d.distance,which:d.which,not:d.not},c||{}),c.distance=g(c.distance),b.add(this,"mousedown",e,c),this.attachEvent&&this.attachEvent("ondragstart",h)},teardown:function(){b.remove(this,"mousedown",e),this===d.dragging&&(d.dragging=d.proxy=!1),i(this,!0),this.detachEvent&&this.detachEvent("ondragstart",h)}};c.dragstart=c.dragend={setup:function(){},teardown:function(){}}})(jQuery);
+(function(a){
+    function e(ev) {
+      var k,
+          j = this,
+          l = ev.data || {};
+  
+      if (l.elem) {
+        j = ev.dragTarget = l.elem;
+        ev.dragProxy = d.proxy || j;
+        ev.cursorOffsetX = l.pageX - l.left;
+        ev.cursorOffsetY = l.pageY - l.top;
+        ev.offsetX = l.pageX - ev.cursorOffsetX;
+        ev.offsetY = l.pageY - ev.cursorOffsetY;
+      } else if (d.dragging || (l.which > 0 && ev.which != l.which) || a(ev.target).is(l.not)) {
+        return false;
+      }
+  
+      switch (ev.type) {
+        case "mousedown":
+          a.extend(l, a(j).offset(), { elem: j, target: ev.target, pageX: ev.pageX, pageY: ev.pageY });
+          b.add(document, "mousemove mouseup", e, l);
+          i(j, false);
+          d.dragging = null;
+          return false;
+  
+        case "mousemove":
+          if (!d.dragging) {
+            // Se o mouse move não excede a distância mínima, ignora.
+            if (g(ev.pageX - l.pageX) + g(ev.pageY - l.pageY) < l.distance) {
+              return true;
+            }
+            ev.target = l.target;
+            k = f(ev, "dragstart", j);
+            if (k !== false) {
+              d.dragging = j;
+              d.proxy = ev.dragProxy = a(k || j)[0];
+            }
+          }
+          if (d.dragging) {
+            k = f(ev, "drag", j);
+            if (c.drop) {
+              c.drop.allowed = (k !== false);
+              c.drop.handler(ev);
+            }
+            if (k !== false) {
+              return true;
+            }
+            // Se o evento "drag" foi cancelado, trata como mouseup
+            ev.type = "mouseup";
+            // Note: neste caso, intencionalmente redirecionamos para o tratamento abaixo.
+          }
+          // Caso "mousemove" caia para "mouseup", não há break, mas a lógica é encaminhada:
+        case "mouseup":
+          b.remove(document, "mousemove mouseup", e);
+          if (d.dragging) {
+            if (c.drop) {
+              c.drop.handler(ev);
+            }
+            f(ev, "dragend", j);
+          }
+          i(j, true);
+          d.dragging = d.proxy = l.elem = false;
+          return true;
+  
+        default:
+          return true;
+      }
+    }
+  
+    function f(ev, eventName, elem) {
+      ev.type = eventName;
+      var ret = a.event.dispatch.call(elem, ev);
+      return ret === false ? false : ret || ev.result;
+    }
+  
+    function g(n) {
+      return Math.pow(n, 2);
+    }
+  
+    function h() {
+      return d.dragging === false;
+    }
+  
+    function i(elem, enableSelect) {
+      if (elem) {
+        elem.unselectable = enableSelect ? "off" : "on";
+        elem.onselectstart = function() { return enableSelect; };
+        if (elem.style) {
+          elem.style.MozUserSelect = enableSelect ? "" : "none";
+        }
+      }
+    }
+  
+    a.fn.drag = function(startCallback, dragCallback) {
+      if (dragCallback) {
+        this.bind("dragstart", startCallback);
+      }
+      if (arguments.length > 2) {
+        this.bind("dragend", arguments[2]);
+      }
+      return startCallback ? this.bind("drag", dragCallback || startCallback) : this.trigger("drag");
+    };
+  
+    var b = a.event,
+        c = b.special,
+        d = c.drag = {
+          not: ":input",
+          distance: 0,
+          which: 1,
+          dragging: false,
+          setup: function(data) {
+            var config = a.extend({ distance: d.distance, which: d.which, not: d.not }, data || {});
+            config.distance = g(config.distance);
+            b.add(this, "mousedown", e, config);
+            if (this.attachEvent) {
+              this.attachEvent("ondragstart", h);
+            }
+          },
+          teardown: function() {
+            b.remove(this, "mousedown", e);
+            if (this === d.dragging) {
+              d.dragging = d.proxy = false;
+            }
+            i(this, true);
+            if (this.detachEvent) {
+              this.detachEvent("ondragstart", h);
+            }
+          }
+        };
+  
+    c.dragstart = c.dragend = { setup: function(){}, teardown: function(){} };
+    
+  })(jQuery);
+  
 
 /* jquery.mousewheel.min.js
  * Copyright (c) 2011 Brandon Aaron (http://brandonaaron.net)

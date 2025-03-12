@@ -47,7 +47,6 @@
 .jsgrid-header-scrollbar {
     scrollbar-arrow-color: #f1f1f1;
     scrollbar-base-color: #f1f1f1;
-    scrollbar-3dlight-color: #f1f1f1;
     scrollbar-highlight-color: #f1f1f1;
     scrollbar-track-color: #f1f1f1;
     scrollbar-shadow-color: #f1f1f1;
@@ -251,6 +250,7 @@
 
 /* old IE */
 .jsgrid-load-panel {
+    /* stylelint-disable-next-line property-no-unknown */
     padding-top: 1.5em\9;
 }
 .jsgrid-load-panel:before {
