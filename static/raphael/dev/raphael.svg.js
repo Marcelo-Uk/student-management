@@ -413,15 +413,18 @@ define(["./raphael.core"], function(R) {
                         }
                         break;
                     case "width":
-                        node.setAttribute(att, value);
-                        o._.dirty = 1;
-                        if (attrs.fx) {
-                            att = "x";
-                            value = attrs.x;
-                            /* falls through intentionally */
-                        } else {
+                            node.setAttribute(att, value);
+                            o._.dirty = 1;
+                            if (attrs.fx) {
+                                // Em vez de cair para o próximo case, processamos a lógica de "x" explicitamente:
+                                att = "x";
+                                // Conforme a lógica do caso "x", se attrs.fx estiver ativo, atualizamos o valor:
+                                value = -attrs.x - (attrs.width || 0);
+                                node.setAttribute(att, value);
+                                o.pattern && updatePosition(o);
+                                o._.dirty = 1;
+                            }
                             break;
-                        }
                     case "x":
                     case "rx":
                     case "cx": {
