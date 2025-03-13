@@ -2,6 +2,11 @@
 import os
 from django.core.exceptions import ImproperlyConfigured
 
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env (certifique-se de que o .env está na raiz do projeto)
+load_dotenv()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
