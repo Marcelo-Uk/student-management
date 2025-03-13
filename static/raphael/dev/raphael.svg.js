@@ -412,37 +412,31 @@ define(["./raphael.core"], function(R) {
                             }
                         }
                         break;
-                        case "width":
-                            node.setAttribute(att, value);
-                            o._.dirty = 1;
+                    case "width":
+                        node.setAttribute(att, value);
+                        o._.dirty = 1;
+                        if (attrs.fx) {
+                            att = "x";
+                            value = attrs.x;
+                            /* falls through intentionally */
+                        } else {
+                            break;
+                        }
+                    case "x":
+                    case "rx":
+                    case "cx": {
+                        if (r[0] === "x") {
                             if (attrs.fx) {
-                                att = "x";
-                                value = attrs.x;
-                                /* falls through intentionally */
-                            } else {
-                                break;
+                                value = -attrs.x - (attrs.width || 0);
                             }
-                            case "x":
-                                case "rx":
-                                case "cx": {
-                                    // Se r[0] for "x", atualize o valor conforme attrs.fx
-                                    if (r[0] === "x") {
-                                        if (attrs.fx) {
-                                            value = -attrs.x - (attrs.width || 0);
-                                        }
-                                    } 
-                                    // Se for "rx" e se o atributo é "rx" num elemento do tipo "rect", interrompa o processamento.
-                                    else if (r[0] === "rx" && att === "rx" && o.type === "rect") {
-                                        break;
-                                    }
-                                    // Em qualquer outro caso (incluindo "cx" ou "x" que não demandou outra ação),
-                                    // aplica o atributo com o valor calculado.
-                                    node.setAttribute(att, value);
-                                    o.pattern && updatePosition(o);
-                                    o._.dirty = 1;
-                                    break;
-                                }
-                                
+                        } else if (r[0] === "rx" && att === "rx" && o.type === "rect") {
+                            break;
+                        }
+                        node.setAttribute(att, value);
+                        o.pattern && updatePosition(o);
+                        o._.dirty = 1;
+                        break;
+                    }
                     case "fill":
                         var isURL = Str(value).match(R._ISURL);
                         if (isURL) {
@@ -489,34 +483,39 @@ define(["./raphael.core"], function(R) {
                             break;
                         }
                         clr[has]("opacity") && $(node, {"fill-opacity": clr.opacity > 1 ? clr.opacity / 100 : clr.opacity});
-                    case "stroke":
-                        clr = R.getRGB(value);
-                        node.setAttribute(att, clr.hex);
-                        att == "stroke" && clr[has]("opacity") && $(node, {"stroke-opacity": clr.opacity > 1 ? clr.opacity / 100 : clr.opacity});
-                        if (att == "stroke" && o._.arrows) {
-                            "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                            "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                        }
-                        break;
-                    case "gradient":
-                        (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
-                        break;
+                        break; // Adicionado para garantir o fim do caso "fill"
                     case "opacity":
                         if (attrs.gradient && !attrs[has]("stroke-opacity")) {
                             $(node, {"stroke-opacity": value > 1 ? value / 100 : value});
                         }
-                        // Fall through intended to "fill-opacity"
-                    case "fill-opacity":
                         if (attrs.gradient) {
                             gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                             if (gradient) {
                                 stops = gradient.getElementsByTagName("stop");
                                 $(stops[stops.length - 1], {"stop-opacity": value});
                             }
-                            break;
                         }
+                        break;
+                    case "stroke":
+                        clr = R.getRGB(value);
+                        node.setAttribute(att, clr.hex);
+                        if (att == "stroke" && clr[has]("opacity")) {
+                            $(node, {"stroke-opacity": clr.opacity > 1 ? clr.opacity / 100 : clr.opacity});
+                        }
+                        if (att == "stroke" && o._.arrows) {
+                            "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
+                            "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                        }
+                        break;
+                    case "gradient":
+                        if (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") {
+                            addGradientFill(o, value);
+                        }
+                        break;
                     default:
-                        att == "font-size" && (value = toInt(value, 10) + "px");
+                        if (att == "font-size") {
+                            value = toInt(value, 10) + "px";
+                        }
                         var cssrule = att.replace(/(\-.)/g, function (w) {
                             return w.substring(1).toUpperCase();
                         });
@@ -525,6 +524,7 @@ define(["./raphael.core"], function(R) {
                         node.setAttribute(att, value);
                         break;
                 }
+                
                 
             }
         }
