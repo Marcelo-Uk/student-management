@@ -412,79 +412,37 @@ define(["./raphael.core"], function(R) {
                             }
                         }
                         break;
-                    case "width":
-                        node.setAttribute(att, value);
-                        o._.dirty = 1;
-                        if (attrs.fx) {
-                            att = "x";
-                            value = attrs.x;
-                        } else {
-                            break;
-                        }
-                    case "x":
-                        if (attrs.fx) {
-                            value = -attrs.x - (attrs.width || 0);
-                        }
-                    case "rx":
-                        if (att == "rx" && o.type == "rect") {
-                            break;
-                        }
-                    case "cx":
-                        node.setAttribute(att, value);
-                        o.pattern && updatePosition(o);
-                        o._.dirty = 1;
-                        break;
-                    case "height":
-                        node.setAttribute(att, value);
-                        o._.dirty = 1;
-                        if (attrs.fy) {
-                            att = "y";
-                            value = attrs.y;
-                        } else {
-                            break;
-                        }
-                    case "y":
-                        if (attrs.fy) {
-                            value = -attrs.y - (attrs.height || 0);
-                        }
-                    case "ry":
-                        if (att == "ry" && o.type == "rect") {
-                            break;
-                        }
-                    case "cy":
-                        node.setAttribute(att, value);
-                        o.pattern && updatePosition(o);
-                        o._.dirty = 1;
-                        break;
-                    case "r":
-                        if (o.type == "rect") {
-                            $(node, {rx: value, ry: value});
-                        } else {
+                        case "width":
                             node.setAttribute(att, value);
-                        }
-                        o._.dirty = 1;
-                        break;
-                    case "src":
-                        if (o.type == "image") {
-                            node.setAttributeNS(xlink, "href", value);
-                        }
-                        break;
-                    case "stroke-width":
-                        if (o._.sx != 1 || o._.sy != 1) {
-                            value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
-                        }
-                        node.setAttribute(att, value);
-                        if (attrs["stroke-dasharray"]) {
-                            addDashes(o, attrs["stroke-dasharray"], params);
-                        }
-                        if (o._.arrows) {
-                            "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                            "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                        }
-                        break;
-                    case "stroke-dasharray":
-                        addDashes(o, value, params);
-                        break;
+                            o._.dirty = 1;
+                            if (attrs.fx) {
+                                att = "x";
+                                value = attrs.x;
+                                /* falls through intentionally */
+                            } else {
+                                break;
+                            }
+                            case "x":
+                                case "rx":
+                                case "cx": {
+                                    // Se r[0] for "x", atualize o valor conforme attrs.fx
+                                    if (r[0] === "x") {
+                                        if (attrs.fx) {
+                                            value = -attrs.x - (attrs.width || 0);
+                                        }
+                                    } 
+                                    // Se for "rx" e se o atributo é "rx" num elemento do tipo "rect", interrompa o processamento.
+                                    else if (r[0] === "rx" && att === "rx" && o.type === "rect") {
+                                        break;
+                                    }
+                                    // Em qualquer outro caso (incluindo "cx" ou "x" que não demandou outra ação),
+                                    // aplica o atributo com o valor calculado.
+                                    node.setAttribute(att, value);
+                                    o.pattern && updatePosition(o);
+                                    o._.dirty = 1;
+                                    break;
+                                }
+                                
                     case "fill":
                         var isURL = Str(value).match(R._ISURL);
                         if (isURL) {
